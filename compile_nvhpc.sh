@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export FC=nvfortran
-export FCC="-acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -fopenmp -gpu=deepcopy"
+export FCC="-acc=gpu -Minfo=accel,all,intensity,ccff -gpu=lineinfo -O3 -fopenmp "
 #export FCC="-O3"
 
 
