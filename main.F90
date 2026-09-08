@@ -23,14 +23,20 @@ SUBROUTINE ALLOCATE_SPECPTRS(SPECPTRS, NFIELDS, NSMAX)
 
 END SUBROUTINE ALLOCATE_SPECPTRS
 
-SUBROUTINE WRAP(SPECPTRS,YDSP, NFIELDS)
+SUBROUTINE WRAP(SPECPTRS,YDSP, NFIELDS,NSMAX,PSPEC)
       TYPE(SPEC_DATA), INTENT(IN), TARGET :: SPECPTRS(:)
       TYPE(SPEC_VIEW), INTENT(INOUT) :: YDSP(:)
-      INTEGER, INTENT(IN) :: NFIELDS
-      INTEGER :: JFLD
+      INTEGER, INTENT(IN) :: NFIELDS,NSMAX
+      REAL(KIND=8), INTENT(IN) :: PSPEC(:,:)
+      INTEGER :: JFLD, JN
 
       DO JFLD=1, NFIELDS
             YDSP(JFLD)%P => SPECPTRS(JFLD)%P
+      ENDDO
+      DO JFLD=1,NFIELDS
+        DO JN=1,NSMAX
+          YDSP(JFLD)%P(JN)=PSPEC(JFLD,JN)
+        ENDDO
       ENDDO
 END SUBROUTINE WRAP
 
@@ -269,11 +275,12 @@ ALLOCATE(PIA_REF(NFIELDS,NSMAX,DNUMP))
 ALLOCATE(PSPEC(NFIELDS,NSMAX))
 PIA=0.
 PIA_REF=0.
+CALL RANDOM_NUMBER(PSPEC)
 
 CALL ALLOCATE_SPECPTRS(SPECPTRS,NFIELDS,NSMAX)
 ALLOCATE(YDSP(NFIELDS))
  
-CALL WRAP(SPECPTRS,YDSP,NFIELDS)
+CALL WRAP(SPECPTRS,YDSP,NFIELDS,NSMAX,PSPEC)
 !$ACC ENTER DATA COPYIN(PIA,PIA_REF,PSPEC,SPECPTRS,YDSP)
 DO ITER=1, NFIELDS
    !$ACC ENTER DATA COPYIN(SPECPTRS(ITER)%P)
@@ -316,7 +323,7 @@ do jfld=1,nfields
   do jn=1,nsmax
     do jmloc=1,dnump
       if (pia_ref(jfld,jn,jmloc)/=pia(jfld,jn,jmloc))&
-         & write (*,*) "jfld jn jmloc v1 v2",jfld,jn,jmloc,pia_ref(jfld,jn,jmloc),pia(jfld,jn,jmloc)
+        &  write (*,*) "jfld jn jmloc v1 v2",jfld,jn,jmloc,pia_ref(jfld,jn,jmloc),pia(jfld,jn,jmloc)
       if (pia_ref(jfld,jn,jmloc)/=pia(jfld,jn,jmloc))&
          & write (*,*) "erreur"
     enddo
